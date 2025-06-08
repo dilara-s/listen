@@ -11,11 +11,12 @@
                     </div>
                     <div class="card-body">
                         <form action="/playlists/${playlist.id}/update" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <div class="position-relative" style="aspect-ratio: 1; overflow: hidden; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                                            <img src="${playlist.coverUrl}" 
+                                            <img src="${playlist.coverUrl!defaultCover}" 
                                                  id="coverPreview"
                                                  class="img-fluid w-100 h-100"
                                                  style="object-fit: cover;"
@@ -54,7 +55,7 @@
                                         <textarea class="form-control" 
                                                   id="description" 
                                                   name="description" 
-                                                  rows="3">${playlist.description?default('')}</textarea>
+                                                  rows="3">${playlist.description!''}</textarea>
                                     </div>
                                 </div>
                             </div>
@@ -92,16 +93,17 @@
                                         <tr>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <img src="${song.coverUrl?default('https://res.cloudinary.com/dsyuw4byo/image/upload/v1749381928/4a86344f69940e6b166c0bcbde36c3bc_om4gev.jpg')}"
+                                                    <#assign defaultCover = "https://res.cloudinary.com/dsyuw4byo/image/upload/v1749381928/4a86344f69940e6b166c0bcbde36c3bc_om4gev.jpg">
+                                                    <img src="${song.coverUrl!defaultCover}"
                                                          style="width: 40px; height: 40px; object-fit: cover;" 
                                                          class="me-3 rounded">
                                                     <div>
-                                                        <div>${song.title}</div>
-                                                        <small class="text-muted d-block d-md-none">${song.artistName}</small>
+                                                        <div>${song.title!'Untitled'}</div>
+                                                        <small class="text-muted d-block d-md-none">${song.artistName!'Unknown Artist'}</small>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="d-none d-md-table-cell">${song.artistName}</td>
+                                            <td class="d-none d-md-table-cell">${song.artistName!'Unknown Artist'}</td>
                                             <td>
                                                 <button class="btn btn-link text-danger" onclick="removeSong(${song.id})">
                                                     <i class="bi bi-trash"></i>
@@ -154,6 +156,9 @@
     </div>
 
     <script>
+        // Добавляем ID плейлиста в JavaScript контекст
+        const playlistId = ${playlist.id};
+        
         // Cover preview
         function previewCover(input) {
             if (input.files && input.files[0]) {
@@ -185,33 +190,41 @@
                 return;
             }
 
-            fetch(`/api/songs/search?query=${encodeURIComponent(query)}`)
+            // Используем встроенную функцию encodeURIComponent из JavaScript
+            const encodedQuery = encodeURIComponent(query);
+            fetch('/api/songs/search?query=' + encodedQuery)
                 .then(response => response.json())
                 .then(songs => {
                     const results = document.getElementById('searchResults');
-                    results.innerHTML = songs.map(song => `
-                        <div class="list-group-item list-group-item-action">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center">
-                                       <img src="${(song.coverUrl)!'https://res.cloudinary.com/dsyuw4byo/image/upload/v1749381928/4a86344f69940e6b166c0bcbde36c3bc_om4gev.jpg'}"
-                                         style="width: 40px; height: 40px; object-fit: cover;" 
-                                         class="me-3 rounded">
-                                    <div>
-                                        <h6 class="mb-0">${song.title}</h6>
-                                        <small class="text-muted">${song.artistName}</small>
+                    results.innerHTML = songs.map(song => {
+                        const defaultCover = 'https://res.cloudinary.com/dsyuw4byo/image/upload/v1749376033/cd1a3129e2f329c1606058abb2e369b0_prpkac.jpg';
+                        const coverUrl = song.coverUrl || defaultCover;
+                        const title = song.title || 'Untitled';
+                        const artistName = song.artistName || 'Unknown Artist';
+                        return `
+                            <div class="list-group-item list-group-item-action">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <img src="\${coverUrl}"
+                                             style="width: 40px; height: 40px; object-fit: cover;" 
+                                             class="me-3 rounded">
+                                        <div>
+                                            <h6 class="mb-0">\${title}</h6>
+                                            <small class="text-muted">\${artistName}</small>
+                                        </div>
                                     </div>
+                                    <button class="btn btn-primary btn-sm" onclick="addSong(\${song.id})">
+                                        <i class="bi bi-plus-lg"></i> Add
+                                    </button>
                                 </div>
-                                <button class="btn btn-primary btn-sm" onclick="addSong(${song.id})">
-                                    <i class="bi bi-plus-lg"></i> Add
-                                </button>
                             </div>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 });
         }
 
         function addSong(songId) {
-            fetch(`/api/playlists/${playlist.id}/songs/${songId}`, {
+            fetch('/api/playlists/' + playlistId + '/songs/' + songId, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -225,7 +238,7 @@
 
         function removeSong(songId) {
             if (confirm('Remove this song from the playlist?')) {
-                fetch(`/api/playlists/${playlist.id}/songs/${songId}`, {
+                fetch('/api/playlists/' + playlistId + '/songs/' + songId, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'

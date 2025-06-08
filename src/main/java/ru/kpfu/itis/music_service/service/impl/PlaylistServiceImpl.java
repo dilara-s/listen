@@ -42,6 +42,8 @@ public class PlaylistServiceImpl implements PlaylistService {
             playlist.setCoverUrl(playlistDto.getCoverUrl());
         }
         
+        playlistDto.setSongs(playlistConverter.toDto(playlist).getSongs());
+        
         return playlistConverter.toDto(playlistRepository.save(playlist));
     }
 

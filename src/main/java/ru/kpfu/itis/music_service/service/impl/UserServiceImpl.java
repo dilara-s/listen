@@ -116,7 +116,16 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void delete(Long id) {
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Clear favorite songs
+        user.getFavoriteSongs().clear();
+        
+        // Clear playlists (they will be deleted automatically due to CascadeType.ALL)
+        user.getPlaylists().clear();
+        
+        userRepository.delete(user);
     }
 
     @Override
