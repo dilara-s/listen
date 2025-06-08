@@ -1,0 +1,52 @@
+### Переменные окружения
+@baseUrl = http://localhost:8080/api
+@authToken = your_jwt_token_here
+
+### Получить все песни
+GET {{baseUrl}}/songs
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+### Получить песню по ID
+GET {{baseUrl}}/songs/1
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+### Поиск песен по названию
+GET {{baseUrl}}/songs/search?query=love
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+### Создать новую песню (только для админа)
+POST {{baseUrl}}/songs
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Test Song",
+  "artistName": "Test Artist",
+  "coverUrl": "https://example.com/cover.jpg",
+  "audioUrl": "https://example.com/song.mp3"
+}
+
+### Удалить песню (только для админа)
+DELETE {{baseUrl}}/songs/1
+Authorization: Bearer {{authToken}}
+
+### Добавить песню в избранное
+POST {{baseUrl}}/songs/favorite/1
+Authorization: Bearer {{authToken}}
+
+### Удалить песню из избранного
+DELETE {{baseUrl}}/songs/favorite/1
+Authorization: Bearer {{authToken}}
+
+### Получить список избранных песен
+GET {{baseUrl}}/songs/favorites
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+### Получить популярные песни
+GET {{baseUrl}}/songs/popular
+Accept: application/json
+Authorization: Bearer {{authToken}} 

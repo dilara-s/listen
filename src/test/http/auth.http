@@ -1,0 +1,25 @@
+### Переменные окружения
+@baseUrl = http://localhost:8080/api
+
+### Регистрация нового пользователя
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### Вход в систему
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "password123"
+}
+
+### Сохраняем токен из ответа
+@authToken = {{login.response.body.token}} 
